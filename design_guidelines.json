@@ -1,0 +1,121 @@
+{
+  "theme": "light",
+  "archetype": "1 (Organic & Earthy)",
+  "branding": {
+    "name": "HoneyBee Physiotherapy Centre",
+    "motif": "Hexagon / Honeycomb",
+    "vibe": "Warm, Healing, Friendly, Professional"
+  },
+  "typography": {
+    "primary_heading": {
+      "font_family": "Outfit, sans-serif",
+      "google_font_url": "https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap",
+      "weights": ["300", "400", "600", "700"],
+      "usage": "H1-H4, Brand Name, Metric Values. Brings a friendly, geometric but human touch."
+    },
+    "secondary_body": {
+      "font_family": "Plus Jakarta Sans, sans-serif",
+      "google_font_url": "https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap",
+      "weights": ["400", "500", "600"],
+      "usage": "Paragraphs, Forms, Tables, Labels. Highly readable at small sizes."
+    }
+  },
+  "colors": {
+    "background": "hsl(40, 100%, 97%)",
+    "surface": "hsl(0, 0%, 100%)",
+    "primary": "hsl(32, 95%, 44%)",
+    "primary_foreground": "hsl(40, 100%, 97%)",
+    "accent": "hsl(38, 92%, 50%)",
+    "accent_foreground": "hsl(21, 91%, 14%)",
+    "text_main": "hsl(21, 91%, 14%)",
+    "text_muted": "hsl(22, 78%, 26%)",
+    "border": "hsl(36, 40%, 85%)",
+    "role_accents": {
+      "patient": "hsl(38, 92%, 50%)", 
+      "receptionist": "hsl(28, 80%, 52%)",
+      "therapist": "hsl(180, 20%, 40%)",
+      "manager": "hsl(220, 14%, 46%)",
+      "admin": "hsl(21, 91%, 14%)"
+    }
+  },
+  "spacing_and_radius": {
+    "spacing_scale": "Use p-6, p-8, and p-12 for generous breathing room. Avoid cramped default paddings.",
+    "radius_scale": {
+      "buttons": "rounded-full",
+      "cards": "rounded-2xl",
+      "inputs": "rounded-xl",
+      "modals": "rounded-3xl"
+    },
+    "shadows": {
+      "card": "shadow-[0_8px_30px_rgb(69,26,3,0.04)]",
+      "floating": "shadow-[0_20px_40px_rgb(217,119,6,0.08)]"
+    }
+  },
+  "media": {
+    "logo_svg_snippet": "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 100\" width=\"100%\" height=\"100%\" fill=\"none\" stroke=\"currentColor\"><polygon points=\"50 3, 93 28, 93 72, 50 97, 7 72, 7 28\" stroke=\"currentColor\" stroke-width=\"6\" fill=\"none\" stroke-linejoin=\"round\"/><ellipse cx=\"50\" cy=\"52\" rx=\"14\" ry=\"20\" fill=\"currentColor\"/><path d=\"M 37 45 L 63 45 M 37 57 L 63 57\" stroke=\"#FFFAF0\" stroke-width=\"4\"/><path d=\"M 50 40 C 30 20, 15 35, 36 50 M 50 40 C 70 20, 85 35, 64 50\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"4\" stroke-linecap=\"round\"/><circle cx=\"50\" cy=\"22\" r=\"6\" fill=\"currentColor\"/></svg>",
+    "images": [
+      {
+        "category": "landing_hero",
+        "url": "https://images.unsplash.com/photo-1630226040750-d934f017f0e4?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzMzV8MHwxfHNlYXJjaHwxfHxtb2Rlcm4lMjBwaHlzaW90aGVyYXB5JTIwY2xpbmljJTIwd2FybXxlbnwwfHx8fDE3ODEwODcwMTF8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Modern physiotherapy clinic with warm lighting"
+      },
+      {
+        "category": "empty_state_abstract",
+        "url": "https://images.unsplash.com/photo-1580912458702-6fa698fc553e?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NDk1Nzd8MHwxfHNlYXJjaHwxfHxhYnN0cmFjdCUyMGhvbmV5Y29tYiUyMHdhcm18ZW58MHx8fHwxNzgxMDg3MDEwfDA&ixlib=rb-4.1.0&q=85",
+        "alt": "Warm honeycomb abstract pattern"
+      },
+      {
+        "category": "therapist_avatar",
+        "url": "https://images.unsplash.com/photo-1484863137850-59afcfe05386?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2OTF8MHwxfHNlYXJjaHwxfHxmcmllbmRseSUyMHBoeXNpY2FsJTIwdGhlcmFwaXN0JTIwcG9ydHJhaXR8ZW58MHx8fHwxNzgxMDg3MDExfDA&ixlib=rb-4.1.0&q=85",
+        "alt": "Friendly physical therapist portrait"
+      },
+      {
+        "category": "patient_treatment",
+        "url": "https://images.unsplash.com/photo-1645005512968-0c1fe99f0093?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxODl8MHwxfHNlYXJjaHwxfHxwYXRpZW50JTIwcGh5c2ljYWwlMjB0aGVyYXB5JTIwaGVhbGluZ3xlbnwwfHx8fDE3ODEwODcwMTF8MA&ixlib=rb-4.1.0&q=85",
+        "alt": "Patient physical therapy healing"
+      }
+    ]
+  },
+  "layout_blueprints": {
+    "landing_login": {
+      "type": "split_screen",
+      "layout_specs": "Left Panel: Hero image (landing_hero) with a warm overlay (bg-black/20). Center the HoneyBee logo and large Outfit heading 'Healing in Motion'. Right Panel: Solid cream background. Login form centered. Role selector tabs (Patient, Receptionist, Therapist, Manager, Admin). Soft borders on inputs.",
+      "visual_cues": "Welcoming, expansive.",
+      "components": ["Card", "Tabs", "Input", "Button"]
+    },
+    "patient_portal": {
+      "type": "soft_bento_grid",
+      "layout_specs": "Top bar navigation. High transparency glassmorphism header over cream background. User profile right. Generous container for main view. Bento layout: Left large card for 'Book Appointment' (Shadcn Calendar + Dropdown). Right stack: 'My Appointments' list and 'Pending Bills' card.",
+      "visual_cues": "Airy, reassuring, heavily rounded corners.",
+      "components": ["Calendar", "Dropdown-menu", "Card", "Badge", "Button"]
+    },
+    "receptionist_dashboard": {
+      "type": "dense_operational",
+      "layout_specs": "Left sidebar navigation. Main body has a global patient search input at the top. The rest is a wide grid showing a daily calendar of ALL therapists side-by-side. Billing queue table at the bottom.",
+      "visual_cues": "Highly functional, information-dense but clear. Light sidebar.",
+      "components": ["Input", "Sheet", "Table", "Dialog", "Tabs"]
+    },
+    "therapist_dashboard": {
+      "type": "clinical_focus",
+      "layout_specs": "Left sidebar (Clean white). Main view: Chronological timeline of today's appointments. Clicking a patient opens a 'Treatment Record' Dialog/Sheet to add notes.",
+      "visual_cues": "Minimalist, distraction-free. High contrast text.",
+      "components": ["Card", "Sheet", "Dialog", "Textarea"]
+    },
+    "manager_dashboard": {
+      "type": "analytical_grid",
+      "layout_specs": "Top navigation. Top row: 4 Metric Cards (Revenue, Appointments, etc). Middle row: Wide Recharts Line chart (Revenue trend) and Recharts Bar chart (Therapist Workload). Bottom row: Data table for Financial Reports.",
+      "visual_cues": "Structured, data-heavy, professional.",
+      "components": ["Card", "Select", "Table", "Recharts"]
+    },
+    "admin_panel": {
+      "type": "technical_structured",
+      "layout_specs": "Left sidebar with a darker warm-walnut background to establish a secure, technical context (distinct from the airy Patient portal). Header: 'HoneyBee Physiotherapy Centre Admin Portal'. Main body: Dense CRUD Table for Users. System health badges at the top.",
+      "visual_cues": "Rigid, secure, technical. Dark sidebar distinguishes it completely from patient/therapist views.",
+      "components": ["Table", "Badge", "Dialog", "Dropdown-menu"]
+    }
+  },
+  "components_instructions": {
+    "shadcn_customizations": "Override default Shadcn border radiuses to match `spacing_and_radius.radius_scale`. Avoid default gray borders; use the custom `border` token. Override primary button backgrounds to Honey Gold with warm cream text. Ensure Calendar component uses warm accents for selected dates.",
+    "testing": "All interactive elements MUST include `data-testid` attribute. Format: `[role]-[feature]-[element]`. Example: `patient-book-appointment-button`."
+  }
+}
