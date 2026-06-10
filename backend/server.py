@@ -253,7 +253,12 @@ async def me(user: dict = Depends(get_current_user)):
 # ------------------------------------------------------------------
 @api.get("/users")
 async def list_users(role: Optional[str] = None, user: dict = Depends(get_current_user)):
-    # admin sees all; receptionist/manager need to fetch therapists/patients
+    # patients can only list therapists (for booking dropdown)
+    if user["role"] == "patient":
+        if role != "therapist":
+            raise HTTPException(403, "Forbidden")
+        docs = await db.users.find({"role": "therapist"}, {"_id": 0, "password_hash": 0}).to_list(500)
+        return docs
     if user["role"] not in ("admin", "receptionist", "manager", "therapist"):
         raise HTTPException(403, "Forbidden")
     q = {}
@@ -427,6 +432,9 @@ async def update_appointment(appt_id: str, req: AppointmentUpdate, user: dict = 
     update = {k: v for k, v in req.model_dump(exclude_none=True).items()}
     if not update:
         raise HTTPException(400, "Nothing to update")
+    # Patients cannot mark completed
+    if user["role"] == "patient" and update.get("status") == "completed":
+        raise HTTPException(403, "Patients cannot complete appointments")
     res = await db.appointments.update_one({"id": appt_id}, {"$set": update})
     if res.matched_count == 0:
         raise HTTPException(404, "Appointment not found")

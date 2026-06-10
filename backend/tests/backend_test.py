@@ -186,6 +186,25 @@ class TestAppointments:
         invs = admin.get(f"{API}/invoices", timeout=10).json()
         assert any(i["appointment_id"] == aid for i in invs), "No invoice auto-created on completion"
 
+    def test_patient_cannot_mark_completed(self, patient, receptionist):
+        # create a fresh appointment for patient via receptionist
+        patients = receptionist.get(f"{API}/patients", timeout=10).json()
+        therapists = receptionist.get(f"{API}/users?role=therapist", timeout=10).json()
+        # find patient1's profile
+        me = patient.get(f"{API}/auth/me").json()
+        target = next((p for p in patients if p.get("user_id") == me["id"]), patients[0])
+        r = receptionist.post(f"{API}/appointments", json={
+            "patient_id": target["id"],
+            "therapist_id": therapists[0]["id"],
+            "scheduled_at": "2026-12-30T09:00:00+00:00",
+            "reason": "TEST patient-complete-guard",
+        }, timeout=15)
+        assert r.status_code == 200
+        aid = r.json()["id"]
+        # patient tries to complete
+        r2 = patient.patch(f"{API}/appointments/{aid}", json={"status": "completed"}, timeout=10)
+        assert r2.status_code == 403, f"Expected 403, got {r2.status_code}: {r2.text}"
+
     def test_delete_cancels_appointment(self, patient):
         appt_id = getattr(pytest, "shared_appt_id", None)
         if not appt_id:
