@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Shell } from "@/components/Shell";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,10 @@ import { TID } from "@/constants/testIds";
 const COLORS = ["hsl(32,95%,44%)", "hsl(38,92%,50%)", "hsl(22,78%,26%)", "hsl(180,30%,40%)"];
 
 export default function ManagerDashboard() {
+  const location = useLocation();
+  const hashTab = (location.hash || "").replace("#", "");
+  const [tab, setTab] = useState(hashTab || "financial");
+  useEffect(() => { if (hashTab && hashTab !== tab) setTab(hashTab); /* eslint-disable-next-line */ }, [hashTab]);
   const [data, setData] = useState(null);
   const [appointments, setAppointments] = useState([]);
   const [invoices, setInvoices] = useState([]);
@@ -105,10 +110,11 @@ export default function ManagerDashboard() {
         </div>
       </Card>
 
-      <Tabs defaultValue="financial">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="bg-[hsl(38,60%,94%)] rounded-full p-1 mb-3">
           <TabsTrigger value="financial" className="rounded-full">Financial reports</TabsTrigger>
           <TabsTrigger value="appointments" className="rounded-full">Appointment reports</TabsTrigger>
+          <TabsTrigger value="reports" className="rounded-full">Therapist performance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="financial">
@@ -151,6 +157,24 @@ export default function ManagerDashboard() {
                       a.status === "cancelled" ? "bg-rose-100 text-rose-700" :
                       "bg-[hsl(38,92%,50%)]/20 text-[hsl(21,91%,14%)]"
                     }>{a.status}</Badge></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="reports">
+          <Card className="rounded-2xl bg-white border-border shadow-card overflow-hidden">
+            <table className="w-full text-sm">
+              <thead className="bg-[hsl(38,60%,94%)] text-left text-xs uppercase tracking-wide text-muted-foreground">
+                <tr><th className="px-4 py-3">Therapist</th><th className="px-4 py-3 text-right">Appointments</th></tr>
+              </thead>
+              <tbody>
+                {(data.workload || []).map((w) => (
+                  <tr key={w.therapist} className="border-t border-border">
+                    <td className="px-4 py-3 font-medium">{w.therapist}</td>
+                    <td className="px-4 py-3 text-right font-semibold">{w.appointments}</td>
                   </tr>
                 ))}
               </tbody>

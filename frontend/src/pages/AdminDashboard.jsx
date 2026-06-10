@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Shell } from "@/components/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,10 @@ import { TID } from "@/constants/testIds";
 const ROLES = ["patient", "receptionist", "therapist", "manager", "admin"];
 
 export default function AdminDashboard() {
+  const location = useLocation();
+  const hashTab = (location.hash || "").replace("#", "");
+  const [tab, setTab] = useState(hashTab || "users");
+  useEffect(() => { if (hashTab && hashTab !== tab) setTab(hashTab); /* eslint-disable-next-line */ }, [hashTab]);
   const [users, setUsers] = useState([]);
   const [health, setHealth] = useState(null);
   const [logs, setLogs] = useState([]);
@@ -140,7 +145,7 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <Tabs defaultValue="users">
+      <Tabs value={tab} onValueChange={setTab}>
         <TabsList className="bg-[hsl(38,60%,94%)] rounded-full p-1 mb-4">
           <TabsTrigger value="users" className="rounded-full">User accounts ({users.length})</TabsTrigger>
           <TabsTrigger value="maintenance" className="rounded-full">System maintenance</TabsTrigger>

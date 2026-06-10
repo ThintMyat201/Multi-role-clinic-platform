@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import { Shell } from "@/components/Shell";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,13 @@ import { api, formatApiErrorDetail } from "@/lib/api";
 import { TID } from "@/constants/testIds";
 
 export default function ReceptionistDashboard() {
-  const [tab, setTab] = useState("schedule");
+  const location = useLocation();
+  const hashTab = (location.hash || "").replace("#", "");
+  const [tab, setTab] = useState(hashTab || "schedule");
+  useEffect(() => {
+    if (hashTab && hashTab !== tab) setTab(hashTab);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hashTab]);
   const [search, setSearch] = useState("");
   const [patients, setPatients] = useState([]);
   const [therapists, setTherapists] = useState([]);

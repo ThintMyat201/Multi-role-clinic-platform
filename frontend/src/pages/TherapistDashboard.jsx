@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Shell } from "@/components/Shell";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,10 @@ import { api, formatApiErrorDetail } from "@/lib/api";
 import { TID } from "@/constants/testIds";
 
 export default function TherapistDashboard() {
+  const location = useLocation();
+  const hashTab = (location.hash || "").replace("#", "");
+  const [tab, setTab] = useState(hashTab || "today");
+  useEffect(() => { if (hashTab && hashTab !== tab) setTab(hashTab); /* eslint-disable-next-line */ }, [hashTab]);
   const [appointments, setAppointments] = useState([]);
   const [records, setRecords] = useState([]);
   const [openAppt, setOpenAppt] = useState(null);
@@ -81,7 +86,7 @@ export default function TherapistDashboard() {
           <p className="text-muted-foreground mt-2 max-w-xl">A quiet, distraction-free view of your day. Click any patient to capture treatment notes.</p>
         </div>
 
-        <Tabs defaultValue="today">
+        <Tabs value={tab} onValueChange={setTab}>
           <TabsList className="bg-[hsl(38,60%,94%)] rounded-full p-1 mb-5">
             <TabsTrigger value="today" className="rounded-full">Today ({todays.length})</TabsTrigger>
             <TabsTrigger value="upcoming" className="rounded-full">Upcoming ({upcoming.length})</TabsTrigger>

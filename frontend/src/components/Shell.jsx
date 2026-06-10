@@ -40,7 +40,11 @@ export function Shell({ navItems = [], children, accent = "honey", title }) {
       </div>
       <nav className="flex-1 px-3 py-5 space-y-1.5">
         {navItems.map((item) => {
-          const active = location.pathname === item.to;
+          const [itemPath, itemHash = ""] = item.to.split("#");
+          const currentHash = (location.hash || "").replace("#", "");
+          const active =
+            location.pathname === itemPath &&
+            (itemHash ? currentHash === itemHash : currentHash === "");
           return (
             <Link
               key={item.to}
