@@ -22,10 +22,19 @@ CREDS = {
 
 
 def _login(role):
+    """Login and return a requests.Session pre-configured with
+    Authorization: Bearer <token> header. Cookies still set by server (fallback)
+    but the test harness uses the JWT in the response body."""
     s = requests.Session()
     email, pw = CREDS[role]
     r = s.post(f"{API}/auth/login", json={"email": email, "password": pw}, timeout=20)
     assert r.status_code == 200, f"login {role} failed: {r.status_code} {r.text}"
+    body = r.json()
+    token = body.get("token")
+    assert token, f"login {role}: response missing 'token' field. body={body}"
+    s.headers.update({"Authorization": f"Bearer {token}"})
+    # Drop the cookie so the test exercises only the Authorization header path
+    s.cookies.clear()
     return s
 
 
@@ -64,7 +73,9 @@ class TestAuth:
         data = r.json()
         assert data["email"] == email
         assert data["role"] == role
-        # httpOnly cookie set
+        # New: token is returned in response body for Authorization: Bearer auth
+        assert "token" in data and isinstance(data["token"], str) and len(data["token"]) > 20
+        # Cookie still set as fallback
         assert "access_token" in r.cookies
 
     def test_login_invalid(self):
@@ -95,6 +106,22 @@ class TestAuth:
         data = r.json()
         assert data["role"] == "patient"
         assert data["email"] == email
+        # register should also return token (parity with login)
+        assert "token" in data and len(data["token"]) > 20
+
+    def test_bearer_token_works_without_cookie(self):
+        """Verify Authorization: Bearer header alone is enough (no cookie)."""
+        email, pw = CREDS["admin"]
+        login = requests.post(f"{API}/auth/login", json={"email": email, "password": pw}, timeout=15)
+        token = login.json()["token"]
+        # Fresh session, no cookies, only bearer
+        r = requests.get(f"{API}/auth/me", headers={"Authorization": f"Bearer {token}"}, timeout=10)
+        assert r.status_code == 200
+        assert r.json()["role"] == "admin"
+
+    def test_missing_auth_returns_401(self):
+        r = requests.get(f"{API}/auth/me", timeout=10)
+        assert r.status_code == 401
 
 
 # ---------------- RBAC ----------------

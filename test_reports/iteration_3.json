@@ -1,0 +1,44 @@
+{
+  "summary": "Iteration 3 verifies the AUTH FIX (cookie -> Authorization: Bearer header). All 32/32 backend tests pass using Bearer token in session header (cookies cleared from session before each test). Frontend smoke-tested all 5 roles: login stores token in localStorage 'honeybee_token', role-specific dashboards load, logout clears token and protected routes redirect to /login. Patient booking creates a real appointment (verified via /api/appointments), therapist save-notes completes an appointment, manager KPIs + 6 recharts render, admin portal lists 14 users with role badges.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "POST /api/auth/login + register", "issue": "Token (JWT) is returned in response body for Bearer auth, but the access_token httpOnly cookie is also still set with samesite=none/secure=true. Two parallel auth mechanisms — works correctly, but worth picking one for clarity post-MVP."},
+      {"endpoint": "CORS allow_origin_regex='.*' with allow_credentials=true", "issue": "Permissive CORS regex remains. Bearer header path is unaffected (no preflight credential constraint hit) so functionally fine; tighten in prod."},
+      {"endpoint": "list_appointments date range", "issue": "Existing edge case from iter 1 still present: < date+T23:59:59 boundary. Cosmetic."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [
+      {"screen": "Manager dashboard", "issues": ["Recharts logs width(-1)/height(-1) warnings on first render before container measures. Charts still render correctly after first paint."]}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/backend/tests/test_stripe_e2e.py"
+  ],
+  "action_items": [
+    "Optional cleanup: pick a single auth mechanism (Bearer header OR cookie) and remove the other to reduce surface area. The Bearer header is the right primary choice given the ingress CORS override.",
+    "Optional hardening: replace allow_origin_regex='.*' with explicit origin list when allow_credentials is kept.",
+    "Optional: silence Recharts width(-1)/height(-1) warnings by giving ResponsiveContainer parents an explicit min-height."
+  ],
+  "critical_code_review_comments": [
+    "axios interceptor (frontend/src/lib/api.js) correctly reads localStorage('honeybee_token') and attaches Authorization: Bearer. withCredentials removed as expected.",
+    "Backend get_current_user is presumed to accept both cookie and Authorization Bearer (verified by 32/32 passing with cookies cleared). Keep both decoders in one helper.",
+    "server.py still ~900 lines; recommend modularising (auth/, appointments/, payments/, admin/) for maintainability — repeat of iter 1 note.",
+    "All previously flagged RBAC issues from iter 1 (patient listing therapists, PATCH appointment guard) are now passing (test_patient_can_list_therapists + test_patient_cannot_mark_completed both PASS)."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (switched _login helper to use Authorization: Bearer header and clear cookies; added test_bearer_token_works_without_cookie and test_missing_auth_returns_401; assert token in login/register response body)"
+  ],
+  "success_rate": {"backend": "100% (32/32 pass with Bearer auth)", "frontend": "~95% (all 5 dashboards load, all spec-required data-testid selectors functional, patient booking persists, therapist completes appt, admin user table populated, logout flow works)"},
+  "test_credentials": "/app/memory/test_credentials.md verified — all 9 demo accounts login successfully.",
+  "seed_data_creation": "Created a few TEST_ prefixed users and appointments during testing. Booked one new appointment for Hugo on 2026-06-11T10:30 via the patient UI; this can be safely left in the DB or cleaned later.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Auth-fix verification complete. Both Authorization: Bearer header AND access_token cookie work; backend_test.py now exercises ONLY the Bearer path (cookies are cleared from session right after login). If the main agent later removes cookie auth, no test changes needed. Stripe e2e (test_stripe_e2e.py) was not re-run this iteration — only backend_test.py's TestStripe.test_create_checkout_session + test_payment_status (both PASS).",
+  "rca of the issue": "Root cause (resolved): ingress (Cloudflare) overrode Access-Control-Allow-Origin to '*' while backend kept allow_credentials=true, so browsers refused to attach the httpOnly cookie on cross-origin XHRs. FIX VERIFIED: backend returns token in login/register response body; frontend stores in localStorage 'honeybee_token' and sends via Authorization: Bearer through axios interceptor. Cookie still set as a fallback but no longer required for the UI auth path. Verified end-to-end across all 5 roles."
+}

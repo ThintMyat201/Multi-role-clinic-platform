@@ -69,12 +69,12 @@ def create_access_token(user_id: str, email: str, role: str) -> str:
 def set_auth_cookie(response: Response, token: str) -> None:
     response.set_cookie(
         key="access_token", value=token,
-        httponly=True, secure=False, samesite="lax",
+        httponly=True, secure=True, samesite="none",
         max_age=60 * 60 * 12, path="/",
     )
 
 def clear_auth_cookie(response: Response) -> None:
-    response.delete_cookie("access_token", path="/")
+    response.delete_cookie("access_token", path="/", samesite="none", secure=True)
 
 # ------------------------------------------------------------------
 # FastAPI
@@ -217,7 +217,7 @@ async def register(req: RegisterRequest, response: Response):
     token = create_access_token(uid, email, "patient")
     set_auth_cookie(response, token)
     await log_activity({"id": uid, "email": email, "role": "patient"}, "auth.register")
-    return {"id": uid, "email": email, "name": req.name, "role": "patient", "status": "active"}
+    return {"id": uid, "email": email, "name": req.name, "role": "patient", "status": "active", "token": token}
 
 @api.post("/auth/login")
 async def login(req: LoginRequest, response: Response):
@@ -233,6 +233,7 @@ async def login(req: LoginRequest, response: Response):
     return {
         "id": user["id"], "email": user["email"], "name": user["name"],
         "role": user["role"], "status": user.get("status", "active"),
+        "token": token,
     }
 
 @api.post("/auth/logout")
@@ -781,7 +782,7 @@ app.include_router(api)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=os.environ.get('CORS_ORIGINS', '*').split(','),
+    allow_origin_regex=".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
