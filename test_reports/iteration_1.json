@@ -1,0 +1,77 @@
+{
+  "summary": "First end-to-end test of HoneyBee MVP. Backend: 26/29 pass (after my fix). Found 1 critical RBAC bug that breaks the patient booking flow on frontend. Fixed 1 MongoDB ObjectId leak in POST /api/appointments. All 5 role dashboards load. Stripe checkout session creation deferred to retest (no pending invoice for seed patient).",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "GET /api/users?role=therapist",
+        "issue": "Returns 403 for role=patient. Spec requires patients (and receptionists) to fetch the therapist list for the booking dropdown. server.py line 257 'patient' is missing from the allowed roles set. This single bug breaks the entire patient appointment booking flow (therapist dropdown is empty in UI; 'Forbidden' toast appears).",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "Cookie auth security",
+        "issue": "set_auth_cookie uses secure=False. Since the preview env is HTTPS this still works (cookie sent over HTTPS by browser), but should be conditionally True in production. samesite=lax + cross-origin: works for top-level navigation, OK for current flow."
+      },
+      {
+        "endpoint": "CORS_ORIGINS='*' with allow_credentials=True",
+        "issue": "Browsers reject wildcard origin with credentials. It works here because the frontend is same-origin via ingress, but if a different origin is added it will silently fail. Recommend setting explicit origin list."
+      },
+      {
+        "endpoint": "list_appointments date_filter range",
+        "issue": "Uses scheduled_at < date+T23:59:59 — appointments at exactly 23:59:59 would be excluded. Edge case only."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "PatientDashboard - therapist select",
+        "issue": "Dropdown shows 0 options because GET /api/users?role=therapist returns 403 (see critical backend bug). Patient cannot book any appointment from UI.",
+        "selector": "[data-testid='patient-therapist-select']",
+        "priority": "CRITICAL"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Patient booking",
+        "issue": "Blocked by RBAC 403 on /api/users?role=therapist. After backend fix this should work end-to-end.",
+        "affected_selectors": ["[data-testid='patient-therapist-select']", "[data-testid='patient-book-appointment-button']"]
+      }
+    ],
+    "design_issues": [
+      {
+        "screen": "Manager dashboard",
+        "issues": ["Recharts logs width(-1)/height(-1) warnings on initial render. Charts still render correctly after resize, but a brief layout flash is possible. Consider setting an explicit min-height on the ResponsiveContainer parent."]
+      }
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "FIX: server.py line ~257 list_users: allow role='patient' to read /api/users when filtering by role='therapist' (e.g. if role parameter == 'therapist' allow patient too, OR add 'patient' to allowed roles set). This unblocks the entire patient booking flow.",
+    "Optional: harden CORS_ORIGINS to explicit list when allow_credentials=True.",
+    "Optional: set cookie secure=True when running on HTTPS (use env flag).",
+    "Re-run backend tests + frontend patient booking flow after the fix."
+  ],
+  "critical_code_review_comments": [
+    "MongoDB insert mutates docs adding ObjectId _id — already fixed for create_appointment, but create_treatment_record also calls insert_one(doc); it pops _id before return, so OK. Pattern to watch in future endpoints.",
+    "PatientDashboard relies on /api/users which is admin-leaning. Better practice: expose a dedicated /api/therapists public-to-authenticated endpoint to avoid leaking the users namespace to patients.",
+    "server.py is 891 lines — exceeds the 700-line guideline. Recommend splitting into modules (auth/, appointments/, payments/, admin/) for maintainability.",
+    "PATCH /api/appointments has no RBAC — any authenticated user (including patient) can flip any appointment's status to 'completed' and trigger invoice creation. Should restrict status transitions per role.",
+    "log_activity awaited on every request adds DB writes but is not bulk-batched; consider batching/queueing for activity-heavy endpoints."
+  ],
+  "updated_files": [
+    "/app/backend/server.py (added doc.pop('_id', None) after insert_one in create_appointment to fix ObjectId serialization)",
+    "/app/backend/tests/backend_test.py (new)"
+  ],
+  "success_rate": {"backend": "90% (26/29 pass, 3 skipped, 2 fail — both caused by the single RBAC bug)", "frontend": "80% (all 5 portals load, booking blocked by backend RBAC bug)"},
+  "test_credentials": "From /app/memory/test_credentials.md — all 9 demo accounts verified to log in successfully.",
+  "seed_data_creation": "Used existing seeded demo data + a few TEST_ prefixed users/appointments created during test runs.",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Single one-line fix needed: add 'patient' to allowed roles in GET /api/users (or special-case role=therapist). After fix re-run: pytest /app/backend/tests/backend_test.py and frontend patient booking smoke. Stripe e2e was not fully exercised because the seed patient (Hugo) has no pending invoice — create one by marking a Hugo appointment as completed via receptionist, then test POST /api/payments/checkout.",
+  "rca of the issue": "GET /api/users authorization check (server.py:257) whitelists ['admin','receptionist','manager','therapist'] but excludes 'patient'. The patient dashboard's booking widget calls api.get('/api/users?role=therapist') to populate the therapist dropdown. The 403 leaves the Select empty, blocking booking. Reproduce: login as patient -> open /patient -> click therapist dropdown -> 0 options; 'Forbidden' toast appears in top-right. Mitigation: relax the guard for role=therapist OR add a dedicated /api/therapists endpoint."
+}
