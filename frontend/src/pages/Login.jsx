@@ -39,11 +39,20 @@ export default function LoginPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      // Defensive: clear any stale token before login (otherwise the
+      // axios interceptor will send an old Authorization header that the
+      // backend ignores but some proxies trip on).
+      localStorage.removeItem("honeybee_token");
       const u = await login(email, password);
       toast.success(`Welcome back, ${u.name.split(" ")[0]}`);
       navigate(`/${u.role}`, { replace: true });
     } catch (err) {
-      toast.error(formatApiErrorDetail(err.response?.data?.detail) || "Login failed");
+      const msg =
+        formatApiErrorDetail(err.response?.data?.detail) ||
+        err.response?.data?.message ||
+        err.message ||
+        "Login failed. Please check your connection and try again.";
+      toast.error(msg);
     } finally {
       setBusy(false);
     }
@@ -53,11 +62,17 @@ export default function LoginPage() {
     e.preventDefault();
     setBusy(true);
     try {
+      localStorage.removeItem("honeybee_token");
       const u = await register({ email, password, name, phone });
       toast.success(`Welcome to HoneyBee, ${u.name.split(" ")[0]}`);
       navigate(`/${u.role}`, { replace: true });
     } catch (err) {
-      toast.error(formatApiErrorDetail(err.response?.data?.detail) || "Sign up failed");
+      const msg =
+        formatApiErrorDetail(err.response?.data?.detail) ||
+        err.response?.data?.message ||
+        err.message ||
+        "Sign up failed. Please check your connection and try again.";
+      toast.error(msg);
     } finally {
       setBusy(false);
     }

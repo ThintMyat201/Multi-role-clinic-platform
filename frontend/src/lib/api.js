@@ -7,10 +7,16 @@ export const api = axios.create({
   baseURL: `${BACKEND_URL}/api`,
 });
 
-// attach Authorization header from localStorage on every request
+// attach Authorization header from localStorage on every request EXCEPT auth ones
 api.interceptors.request.use((config) => {
-  const tok = localStorage.getItem(TOKEN_KEY);
-  if (tok) config.headers.Authorization = `Bearer ${tok}`;
+  const url = config.url || "";
+  const isAuthEntry =
+    url.includes("/auth/login") ||
+    url.includes("/auth/register");
+  if (!isAuthEntry) {
+    const tok = localStorage.getItem(TOKEN_KEY);
+    if (tok) config.headers.Authorization = `Bearer ${tok}`;
+  }
   return config;
 });
 
